@@ -16,8 +16,8 @@ class SignUpView(FormView):
         form_class = self.get_form_class()
         login_form_class = LoginForm
         context = {
-            'signup_form_class' : form_class,
-            'login_form_class' : login_form_class
+            'signup_form_class': form_class,
+            'login_form_class': login_form_class
         }
         return render(request, self.template_name, context=context)
 
@@ -34,7 +34,7 @@ class SignUpView(FormView):
             if new_user(email_address):
                 save_details(full_name, email_address, password)
                 add_session(request, email_address)
-                return HttpResponseRedirect("/homepage")
+                return HttpResponseRedirect("/dashboard")
             else:
                 context = {
                     'signup_form_class': form_class,

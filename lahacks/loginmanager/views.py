@@ -1,9 +1,7 @@
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponseRedirect
 from django.views.generic.edit import FormView
-from django.urls import reverse_lazy
 from .forms import LoginForm
 from signupmanager.forms import SignUpForm
-from signupmanager.views import SignUpView
 from .utils import verify_credentials, add_session
 from django.shortcuts import render
 
@@ -33,7 +31,7 @@ class LoginView(FormView):
 
             if verify_credentials(email_address, password):
                 add_session(request, email_address)
-                return HttpResponseRedirect("/homepage")
+                return HttpResponseRedirect("/dashboard")
             else:
                 context = {
                     'login_form_class': form_class,
