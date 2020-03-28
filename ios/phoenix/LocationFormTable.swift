@@ -16,8 +16,26 @@ class LocationFormTable: UITableViewController {
     @IBOutlet weak var notesTextField: UITextField!
     @IBOutlet weak var sendDataButton: UIBarButtonItem!
     
+    var id: String?
+    var longitude: String?
+    var latitude: String?
+    var timestamp: String?
+    var notes: String?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        if
+            let id = id,
+            let longitude = longitude,
+            let latitude = latitude,
+            let timestamp = timestamp
+        {
+            idTextField.text = id
+            longitudeTextField.text = longitude
+            latitudeTextField.text = latitude
+            timestampTextField.text = timestamp
+        }
         
         idTextField.isUserInteractionEnabled = false
         longitudeTextField.isUserInteractionEnabled = false
@@ -32,7 +50,7 @@ class LocationFormTable: UITableViewController {
     }
     
     @IBAction func sendData(_ sender: Any) {
-        
+        self.navigationController!.popViewController(animated: true)
     }
     
     // MARK: - Table view data source

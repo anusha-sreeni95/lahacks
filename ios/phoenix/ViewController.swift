@@ -6,6 +6,7 @@
 //  Copyright © 2020 Bill Liu. All rights reserved.
 //
 
+import Foundation
 import UIKit
 import MapKit
 
@@ -19,7 +20,9 @@ class ViewController: UIViewController {
     
     var resultSearchController: UISearchController? = nil
     var selectedPin: MKPlacemark? = nil
-    var locationFormTableViewController: UITableViewController? = nil
+    var locationFormTableViewController: LocationFormTable? = nil
+    
+    var uniqueSessionId: String = ""
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -34,7 +37,7 @@ class ViewController: UIViewController {
         resultSearchController?.hidesNavigationBarDuringPresentation = false
         definesPresentationContext = true
         
-        locationFormTableViewController = storyboard!.instantiateViewController(identifier: "LocationFormTable") as! LocationFormTable
+        locationFormTableViewController = storyboard!.instantiateViewController(identifier: "LocationFormTable")
         
         let searchBar = resultSearchController!.searchBar
         searchBar.sizeToFit()
@@ -42,6 +45,8 @@ class ViewController: UIViewController {
         navigationItem.titleView = resultSearchController?.searchBar
         locationSearchTable.mapView = mapView
         locationSearchTable.handleMapSearchDelegate = self
+        
+        uniqueSessionId = NSUUID().uuidString
     }
     
     func setRegion(_ center: CLLocationCoordinate2D) {
@@ -53,8 +58,11 @@ class ViewController: UIViewController {
     @objc func uploadData() {
         if let selectedPin = selectedPin {
             let mapItem = MKMapItem(placemark: selectedPin)
-            print("to print coords")
             if let locationFormTableViewController = locationFormTableViewController {
+                locationFormTableViewController.id = uniqueSessionId
+                locationFormTableViewController.latitude = String(selectedPin.coordinate.latitude)
+                locationFormTableViewController.longitude = String(selectedPin.coordinate.longitude)
+                locationFormTableViewController.timestamp = String(Date().currentTimeMillis())
                 self.navigationController!.pushViewController(locationFormTableViewController, animated: true)
             }
         }
@@ -121,3 +129,8 @@ extension ViewController: MKMapViewDelegate {
     }
 }
 
+extension Date {
+    func currentTimeMillis() -> Int64 {
+        return Int64(self.timeIntervalSince1970 * 1000)
+    }
+}
