@@ -42,7 +42,8 @@ class Human(object):
         self.test_time = self.get_test_time()
         self.timeline = self.initiate_timeline()
 
-        self.api_key = "AIzaSyCcAnGsYZLVBdnZIiBFDv6qE3ep6CVDSwY"
+        with open("API_key.txt", r+) as f:
+            self.api_key = f.read()
 
     def get_test_date(self):
         n_days = np.random.randint(90)
@@ -286,7 +287,7 @@ if __name__=='__main__':
     print(student.test_date)
     print(student.test_time)
     '''
-    
+
     '''
     tourist = Tourist()
     print(tourist.name)
