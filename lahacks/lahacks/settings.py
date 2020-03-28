@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'crispy_forms',
     'bootstrap4',
-    'homepagemanager.apps.HomepagemanagerConfig',
     'signupmanager.apps.SignupmanagerConfig',
     'loginmanager.apps.LoginmanagerConfig',
     'dashboard.apps.DashboardConfig',
