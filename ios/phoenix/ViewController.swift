@@ -62,7 +62,9 @@ class ViewController: UIViewController {
                 locationFormTableViewController.id = uniqueSessionId
                 locationFormTableViewController.latitude = String(selectedPin.coordinate.latitude)
                 locationFormTableViewController.longitude = String(selectedPin.coordinate.longitude)
-                locationFormTableViewController.timestamp = String(Date().currentTimeMillis())
+//                locationFormTableViewController.timestamp = String(Date().currentTimeMillis())
+//                performSegue(withIdentifier: "toData", sender: nil)
+                locationFormTableViewController.location = selectedPin.title
                 self.navigationController!.pushViewController(locationFormTableViewController, animated: true)
             }
         }
@@ -132,5 +134,31 @@ extension ViewController: MKMapViewDelegate {
 extension Date {
     func currentTimeMillis() -> Int64 {
         return Int64(self.timeIntervalSince1970 * 1000)
+    }
+}
+
+extension UINavigationController {
+    func pushViewController(_ viewController: UIViewController, animated: Bool, completion: @escaping () -> Void) {
+        pushViewController(viewController, animated: animated)
+
+        if animated, let coordinator = transitionCoordinator {
+            coordinator.animate(alongsideTransition: nil) { _ in
+                completion()
+            }
+        } else {
+            completion()
+        }
+    }
+
+    func popViewController(animated: Bool, completion: @escaping () -> Void) {
+        popViewController(animated: animated)
+
+        if animated, let coordinator = transitionCoordinator {
+            coordinator.animate(alongsideTransition: nil) { _ in
+                completion()
+            }
+        } else {
+            completion()
+        }
     }
 }
