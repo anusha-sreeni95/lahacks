@@ -1,5 +1,5 @@
 //
-//  LocationFormTable.swift
+//  PatientHistoryTable.swift
 //  phoenix
 //
 //  Created by Bill Liu on 3/28/20.
@@ -8,48 +8,14 @@
 
 import UIKit
 
-class LocationFormTable: UITableViewController {
-    @IBOutlet weak var idTextField: UITextField!
-    @IBOutlet weak var longitudeTextField: UITextField!
-    @IBOutlet weak var latitudeTextField: UITextField!
-    @IBOutlet weak var timestampTextField: UITextField!
-    @IBOutlet weak var notesTextField: UITextField!
-    @IBOutlet weak var sendDataButton: UIBarButtonItem!
-    
-    var id: String?
-    var location: String?
-    var longitude: String?
-    var latitude: String?
-    var timestamp: String?
-    var notes: String?
-    
+class PatientHistoryTable: UITableViewController {
+    var locationRecords: [String] = ["test location"]
+    var timestampRecords: [String] = ["test date"]
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        if
-            let id = id,
-            let longitude = longitude,
-            let latitude = latitude
-        {
-            idTextField.text = id
-            longitudeTextField.text = longitude
-            latitudeTextField.text = latitude
-            
-            let formatter = DateFormatter()
-            formatter.dateFormat = "yyyy-MM-dd"
-            let myString = formatter.string(from: Date())
-            timestampTextField.text = myString
-        }
-        
-        idTextField.isUserInteractionEnabled = false
-        longitudeTextField.isUserInteractionEnabled = false
-        latitudeTextField.isUserInteractionEnabled = false
-        
-        let datePicker = UIDatePicker.init()
-        datePicker.setDate(Date().self, animated: true)
-        datePicker.addTarget(self, action: #selector(updateDate(_:)), for: UIControl.Event.valueChanged)
-        self.timestampTextField.inputView = datePicker
 
+        navigationItem.setRightBarButton(UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addTapped)), animated: true)
         // Uncomment the following line to preserve selection between presentations
         // self.clearsSelectionOnViewWillAppear = false
 
@@ -57,44 +23,35 @@ class LocationFormTable: UITableViewController {
         // self.navigationItem.rightBarButtonItem = self.editButtonItem
     }
     
-    @objc func updateDate(_ sender: Any) {
-        let picker = self.timestampTextField!.inputView as! UIDatePicker
-        timestamp = String(picker.date.currentTimeMillis())
-        
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        let myString = formatter.string(from: picker.date)
-        self.timestampTextField.text = myString
+    override func viewWillAppear(_ animated: Bool) {
+        self.tableView.reloadData()
     }
     
-    @IBAction func sendData(_ sender: Any) {
-        let rootVC = self.navigationController!.viewControllers.first as! PatientHistoryTable
-        rootVC.locationRecords.append(location!)
-        rootVC.timestampRecords.append(self.timestampTextField.text!)
-        self.navigationController!.popToRootViewController(animated: true)
+    @objc func addTapped() {
+        performSegue(withIdentifier: "toMap", sender: nil)
     }
     
     // MARK: - Table view data source
 
-    /*override func numberOfSections(in tableView: UITableView) -> Int {
+    override func numberOfSections(in tableView: UITableView) -> Int {
         // #warning Incomplete implementation, return the number of sections
-        return 0
+        return 1
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
-        return 0
-    }*/
+        return locationRecords.count
+    }
 
-    /*
+    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "reuseIdentifier", for: indexPath)
-
-        // Configure the cell...
-
+        let cell = tableView.dequeueReusableCell(withIdentifier: "historyCell", for: indexPath)
+        
+        cell.textLabel?.text = locationRecords[indexPath.row]
+        cell.detailTextLabel?.text = timestampRecords[indexPath.row]
         return cell
     }
-    */
+    
 
     /*
     // Override to support conditional editing of the table view.
