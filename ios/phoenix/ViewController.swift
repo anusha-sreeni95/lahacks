@@ -19,6 +19,7 @@ class ViewController: UIViewController {
     
     var resultSearchController: UISearchController? = nil
     var selectedPin: MKPlacemark? = nil
+    var locationFormTableViewController: UITableViewController? = nil
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -32,6 +33,8 @@ class ViewController: UIViewController {
         resultSearchController?.searchResultsUpdater = locationSearchTable
         resultSearchController?.hidesNavigationBarDuringPresentation = false
         definesPresentationContext = true
+        
+        locationFormTableViewController = storyboard!.instantiateViewController(identifier: "LocationFormTable") as! LocationFormTable
         
         let searchBar = resultSearchController!.searchBar
         searchBar.sizeToFit()
@@ -51,6 +54,9 @@ class ViewController: UIViewController {
         if let selectedPin = selectedPin {
             let mapItem = MKMapItem(placemark: selectedPin)
             print("to print coords")
+            if let locationFormTableViewController = locationFormTableViewController {
+                self.navigationController!.pushViewController(locationFormTableViewController, animated: true)
+            }
         }
     }
 }

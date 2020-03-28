@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0C0EBDBB242FB160007237CC /* LocationFormTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C0EBDBA242FB160007237CC /* LocationFormTable.swift */; };
 		0C2630E9242F3710005121DC /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C2630E8242F3710005121DC /* AppDelegate.swift */; };
 		0C2630EB242F3710005121DC /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C2630EA242F3710005121DC /* SceneDelegate.swift */; };
 		0C2630ED242F3710005121DC /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C2630EC242F3710005121DC /* ViewController.swift */; };
@@ -17,6 +18,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0C0EBDBA242FB160007237CC /* LocationFormTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationFormTable.swift; sourceTree = "<group>"; };
 		0C2630E5242F3710005121DC /* phoenix.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = phoenix.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0C2630E8242F3710005121DC /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		0C2630EA242F3710005121DC /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -62,6 +64,7 @@
 				0C2630EA242F3710005121DC /* SceneDelegate.swift */,
 				0C2630EC242F3710005121DC /* ViewController.swift */,
 				0C2630FC242F45DC005121DC /* LocationSearchTable.swift */,
+				0C0EBDBA242FB160007237CC /* LocationFormTable.swift */,
 				0C2630EE242F3710005121DC /* Main.storyboard */,
 				0C2630F1242F3712005121DC /* Assets.xcassets */,
 				0C2630F3242F3712005121DC /* LaunchScreen.storyboard */,
@@ -141,6 +144,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0C0EBDBB242FB160007237CC /* LocationFormTable.swift in Sources */,
 				0C2630ED242F3710005121DC /* ViewController.swift in Sources */,
 				0C2630E9242F3710005121DC /* AppDelegate.swift in Sources */,
 				0C2630EB242F3710005121DC /* SceneDelegate.swift in Sources */,
