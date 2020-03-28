@@ -8,9 +8,17 @@
 
 import UIKit
 
+class historyRecord {
+    var location: String = "test"
+    var time: String = "test"
+    var unixTime: Int64 = 0
+}
+
 class PatientHistoryTable: UITableViewController {
-    var locationRecords: [String] = ["test location"]
-    var timestampRecords: [String] = ["test date"]
+    var records: [historyRecord] = [historyRecord.init()]
+//    var locationRecords: [String] = ["test location"]
+//    var timestampRecords: [String] = ["test date"]
+//    var unixRecords: [Int64] = [0]
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -24,6 +32,9 @@ class PatientHistoryTable: UITableViewController {
     }
     
     override func viewWillAppear(_ animated: Bool) {
+        records = records.sorted(by: { (a, b) -> Bool in
+            a.unixTime > b.unixTime
+        })
         self.tableView.reloadData()
     }
     
@@ -40,15 +51,15 @@ class PatientHistoryTable: UITableViewController {
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
-        return locationRecords.count
+        return records.count
     }
 
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "historyCell", for: indexPath)
         
-        cell.textLabel?.text = locationRecords[indexPath.row]
-        cell.detailTextLabel?.text = timestampRecords[indexPath.row]
+        cell.textLabel?.text = records[indexPath.row].location
+        cell.detailTextLabel?.text = records[indexPath.row].time
         return cell
     }
     
