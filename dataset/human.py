@@ -7,7 +7,7 @@ import json
 import numpy as np
 
 from datetime import date, datetime, timedelta
-from utils import is_weekday, generate_random_location
+from utils import is_weekday, generate_random_location, update_timestamp
 
 class Human(object):
 
@@ -21,7 +21,6 @@ class Human(object):
         'party': ['bar', 'night_club'],
         'entertainment': ['amusement_park', 'bowling_alley', 'movie_rental', 'movie_theater', 'museum', 'park', 'stadium',
                           'zoo'],
-        'stay': ['lodging'],
         'tourist_spot': ['aquarium', 'art_gallery', 'tourist_attraction'],
         'transport': ['airport', 'bus_station', 'car_rental', 'car_repair', 'light_rail_station', 'subway_station', 'taxi_stand',
                       'train_station', 'transit_station'],
@@ -42,7 +41,7 @@ class Human(object):
         self.test_time = self.get_test_time()
         self.timeline = self.initiate_timeline()
 
-        with open("API_key.txt", r+) as f:
+        with open("API_key.txt", 'r+') as f:
             self.api_key = f.read()
 
     def get_test_date(self):
@@ -81,9 +80,20 @@ class Human(object):
 
     def edit_timeline(self, bucket, intial_location_str, radius):
         
-        location_type = np.random.choice(self.buckets[bucket])
-        print(location_type)
-        response = self.query(intial_location_str, radius, location_type)
+        condition = True
+        tries=0
+        while True:
+            location_type = np.random.choice(self.buckets[bucket])
+            print(location_type)
+            response = self.query(intial_location_str, radius, location_type)
+            tries+=1
+            if len(response['results'])==0 and tries<3:
+                continue
+            else:
+                break    
+        
+        if len(response['results'])==0:
+            return {}
         
         pruned_results = list(np.random.choice(response['results'], self.places[bucket]))
         
@@ -93,13 +103,13 @@ class Human(object):
         if self.events[bucket] == 'everyday':
             for key in self.timeline.keys():
                 location = np.random.choice(pruned_results)['geometry']['location']
-                self.timeline[key].append(location)
+                self.timeline[key].append(update_timestamp(location, key))
         
         elif self.events[bucket] == 'weekday':
             for key in self.timeline.keys():
                 if is_weekday(key):
                     location = np.random.choice(pruned_results)['geometry']['location']
-                    self.timeline[key].append(location)
+                    self.timeline[key].append(update_timestamp(location, key))
                 else:
                     continue
         
@@ -108,21 +118,21 @@ class Human(object):
             chosen_keys = np.random.choice(list(self.timeline.keys()), random_number)
             for key in chosen_keys:
                 location = np.random.choice(pruned_results)['geometry']['location']
-                self.timeline[key].append(location)
+                self.timeline[key].append(update_timestamp(location, key))
         
         elif self.events[bucket] == 'occasional':
             random_number = np.random.randint(4, 7)
             chosen_keys = np.random.choice(list(self.timeline.keys()), random_number)
             for key in chosen_keys:
                 location = np.random.choice(pruned_results)['geometry']['location']
-                self.timeline[key].append(location)
+                self.timeline[key].append(update_timestamp(location, key))
         
         elif self.events[bucket] == 'rare':
             random_number = np.random.randint(0, 3)
             chosen_keys = np.random.choice(list(self.timeline.keys()), random_number)
             for key in chosen_keys:
                 location = np.random.choice(pruned_results)['geometry']['location']
-                self.timeline[key].append(location)
+                self.timeline[key].append(update_timestamp(location, key))
         
         return np.random.choice(pruned_results)['geometry']['location']
         
@@ -131,29 +141,41 @@ class Human(object):
     def update_timeline(self):
         
         home_location = self.edit_timeline('home', generate_random_location(), 20000)
-        home_location_str = str(home_location['lat']) + ', ' + str(home_location['lng'])
-
+        if home_location=={}:
+            home_location_str = generate_random_location()
+        else:
+            home_location_str = str(home_location['lat']) + ', ' + str(home_location['lng'])
+        
         print("Home Location: {}".format(home_location_str))
 
         work_location = self.edit_timeline('work', home_location_str, 20000)
-        work_location_str = str(work_location['lat']) + ', ' + str(work_location['lng'])
+        if work_location=={}:
+            work_location_str = ''
+        else:
+            work_location_str = str(work_location['lat']) + ', ' + str(work_location['lng'])
 
         print("Work Location: {}".format(work_location_str))
 
-        _ = self.edit_timeline('fitness', home_location_str, 50000)
-        _ = self.edit_timeline('food', work_location_str, 50000)
-        _ = self.edit_timeline('party', work_location_str, 50000)
-        _ = self.edit_timeline('entertainment', home_location_str, 100000)
-        _ = self.edit_timeline('stay', generate_random_location(), 50000)
-        _ = self.edit_timeline('tourist_spot', generate_random_location(), 50000)
-        _ = self.edit_timeline('regular_stores', home_location_str, 50000)
-        _ = self.edit_timeline('occasional_stores', home_location_str, 100000)
-        _ = self.edit_timeline('personal', home_location_str, 100000)
-        _ = self.edit_timeline('worship', home_location_str, 100000)
-        _ = self.edit_timeline('university', home_location_str, 100000)
-            
+        _ = self.edit_timeline('fitness', home_location_str, 5000)
         
+        if work_location_str=='':
+            _ = self.edit_timeline('food', home_location_str, 5000)
+        else:
+            _ = self.edit_timeline('party', work_location_str, 5000)
+        
+        if work_location_str=='':
+            _ = self.edit_timeline('party', home_location_str, 5000)
+        else:
+            _ = self.edit_timeline('party', work_location_str, 5000)
 
+        _ = self.edit_timeline('entertainment', home_location_str, 10000)
+        _ = self.edit_timeline('tourist_spot', generate_random_location(), 100000)
+        _ = self.edit_timeline('regular_stores', home_location_str, 5000)
+        _ = self.edit_timeline('occasional_stores', home_location_str, 10000)
+        _ = self.edit_timeline('personal', home_location_str, 10000)
+        _ = self.edit_timeline('worship', home_location_str, 10000)
+        _ = self.edit_timeline('university', home_location_str, 10000)
+        
         print(self.timeline)
     
 
@@ -168,7 +190,6 @@ class Salaryman(Human):
             'food': 10,
             'party': 5,
             'entertainment': 5,
-            'stay': 0,
             'tourist_spot': 0,
             'transport': 0,
             'regular_stores': 10,
@@ -185,7 +206,6 @@ class Salaryman(Human):
             'food': 'occasional',
             'party': 'rare',
             'entertainment': 'rare',
-            'stay': 'never',
             'tourist_spot': 'never',
             'transport': 'never',
             'regular_stores': 'rare',
@@ -202,37 +222,35 @@ class Student(Human):
     def __init__(self):
         Human.__init__(self)
         self.places = {
-            'work': 1,
+            'work': 0,
             'home': 1,
             'fitness': 1,
             'food': 10,
             'party': 5,
             'entertainment': 5,
-            'stay': 0,
             'tourist_spot': 0,
             'transport': 0,
             'regular_stores': 10,
             'occasional_stores': 30,
             'personal': 10,
             'worship': 3,
-            'university': 0
+            'university': 1
         }
 
         self.events = {
-            'work': 'everyday',
+            'work': 'never',
             'home': 'everyday',
             'fitness': 'regular',
-            'food': 'occasional',
+            'food': 'regular',
             'party': 'rare',
             'entertainment': 'rare',
-            'stay': 'never',
             'tourist_spot': 'never',
-            'transport': 'never',
+            'transport': 'regular',
             'regular_stores': 'rare',
             'occasional_stores': 'rare',
             'personal': 'rare',
-            'worship': 'rare',
-            'university': 'never'
+            'worship': 'never',
+            'university': 'weekday'
         }
 
 class Tourist(Human):
@@ -240,57 +258,59 @@ class Tourist(Human):
     def __init__(self):
         Human.__init__(self)
         self.places = {
-            'work': 1,
+            'work': 0,
             'home': 1,
-            'fitness': 1,
-            'food': 10,
-            'party': 5,
-            'entertainment': 5,
-            'stay': 0,
-            'tourist_spot': 0,
-            'transport': 0,
-            'regular_stores': 10,
-            'occasional_stores': 30,
-            'personal': 10,
-            'worship': 3,
+            'fitness': 0,
+            'food': 15,
+            'party': 10,
+            'entertainment': 10,
+            'tourist_spot': 20,
+            'transport': 20,
+            'regular_stores': 0,
+            'occasional_stores': 0,
+            'personal': 0,
+            'worship': 0,
             'university': 0
         }
 
         self.events = {
-            'work': 'everyday',
+            'work': 'never',
             'home': 'everyday',
-            'fitness': 'regular',
-            'food': 'occasional',
+            'fitness': 'never',
+            'food': 'everday',
             'party': 'rare',
             'entertainment': 'rare',
-            'stay': 'never',
-            'tourist_spot': 'never',
-            'transport': 'never',
-            'regular_stores': 'rare',
-            'occasional_stores': 'rare',
-            'personal': 'rare',
-            'worship': 'rare',
+            'tourist_spot': 'everyday',
+            'transport': 'everyday',
+            'regular_stores': 'never',
+            'occasional_stores': 'never',
+            'personal': 'never',
+            'worship': 'never',
             'university': 'never'
         }
 
 if __name__=='__main__':
+    '''
     salaryman = Salaryman()
     print(salaryman.name)
     print(salaryman.test_date)
     print(salaryman.test_time)
     print('\n')
     salaryman.update_timeline()
-    
+    '''
     '''
     student = Student()
     print(student.name)
     print(student.test_date)
     print(student.test_time)
+    print('\n')
+    student.update_timeline()
     '''
 
-    '''
+    
     tourist = Tourist()
     print(tourist.name)
     print(tourist.test_date)
     print(tourist.test_time)
-    '''
+    print('\n')
+    tourist.update_timeline()

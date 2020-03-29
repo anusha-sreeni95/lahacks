@@ -1,7 +1,7 @@
 import os
 import sys
 import json
-
+import requests
 import numpy as np
 
 from datetime import datetime, timedelta
@@ -15,12 +15,45 @@ def is_weekday(dt_str):
         return False
 
 def generate_random_location(bounds=[33.75, 34.20, -118.50, -118.00]):
-    random_lat = np.random.uniform(bounds[0], bounds[1])
-    random_lon = np.random.uniform(bounds[2], bounds[3])
+    
+    mu = [(bounds[0]+bounds[1])/2, (bounds[2]+bounds[3])/2]
+    sigma = [(bounds[1]-bounds[0])/6, (bounds[3]-bounds[2])/6]
+    
+    random_lat = np.random.normal(mu[0], sigma[0])
+    random_lon = np.random.normal(mu[1], sigma[1])
 
     random_location_str = str(random_lat) + ', ' + str(random_lon)
-
+    
     return random_location_str
+
+def update_timestamp(location_dict, date_string):
+    dt = datetime.strptime(date_string, '%m-%d-%Y')
+    final_dict = location_dict.copy()
+    dt_final = dt + timedelta(np.random.randint(24*60))
+    final_dict.update({'timestamp': dt_final.timestamp()})
+
+    return final_dict
+
+def test_query(location_str, radius, location_type):
+
+    with open("API_key.txt", 'r+') as f:
+            api_key = f.read()
+
+    url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?"
+    params = [('location', location_str),
+                ('radius', radius),
+                ('name', 'cruise'), 
+                ('types', location_type), 
+                ('key', api_key)]
+
+    res = requests.get(url, params = params)
+    results = json.loads(res.content)
+    results = json.dumps(results, indent=4)
+    return results
+
+if __name__=='__main__':
+    results=test_query(generate_random_location(), 5000, 'gym')
+    print(results)
 
 '''
 campground
@@ -68,4 +101,5 @@ Useless Tags:
 
 'car_wash', 'funeral_home'
 
+'lodging'
 '''
