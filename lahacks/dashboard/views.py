@@ -15,7 +15,7 @@ class DashboardView(FormView):
     @csrf_exempt
     def get(self, request, *args, **kwargs):
         form_class = self.get_form_class()
-        location_data = LocationData.objects.filter(request.session['email_address'])
+        location_data = LocationData.objects.filter(email_address=request.session['email_address'])
         context = {
             'form_class': form_class,
             'locations': json.dumps(list(location_data.values("latitutde", "longitude", "timestamp")))
