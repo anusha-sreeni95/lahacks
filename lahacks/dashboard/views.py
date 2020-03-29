@@ -4,6 +4,7 @@ from .forms import UserForm
 from django.views.generic.edit import FormView
 from .utils import add_location
 from .models import LocationData
+from django.views.decorators.csrf import csrf_exempt
 
 
 # Create your views here.
@@ -11,6 +12,7 @@ class DashboardView(FormView):
     template_name = 'dashboard.html'
     form_class = UserForm
 
+    @csrf_exempt
     def get(self, request, *args, **kwargs):
         form_class = self.get_form_class()
         context = {
@@ -21,6 +23,7 @@ class DashboardView(FormView):
             print(data.latitutde, data.longitude, data.timestamp)
         return render(request, self.template_name, context=context)
 
+    @csrf_exempt
     def post(self, request, *args, **kwargs):
         form_class = self.get_form_class()
         form = self.get_form(form_class)

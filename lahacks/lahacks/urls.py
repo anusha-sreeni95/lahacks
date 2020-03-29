@@ -18,9 +18,10 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.conf import settings
 from loginmanager.views import LoginView
+from django.views.decorators.csrf import csrf_exempt
 
 urlpatterns = [
-    url(r'^$', LoginView.as_view(), name="home"),
+    url(r'^$', csrf_exempt(LoginView.as_view()), name="home"),
     url(r'^dashboard/', include("dashboard.urls")),
     url(r'^login/', include("loginmanager.urls")),
     url(r'^signup/', include("signupmanager.urls")),
