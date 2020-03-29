@@ -47,6 +47,7 @@ class ViewController: UIViewController {
         locationSearchTable.handleMapSearchDelegate = self
         
         uniqueSessionId = NSUUID().uuidString
+        self.overrideUserInterfaceStyle = .dark
     }
     
     func setRegion(_ center: CLLocationCoordinate2D) {
@@ -57,7 +58,7 @@ class ViewController: UIViewController {
     
     @objc func uploadData() {
         if let selectedPin = selectedPin {
-            let mapItem = MKMapItem(placemark: selectedPin)
+//            let mapItem = MKMapItem(placemark: selectedPin)
             if let locationFormTableViewController = locationFormTableViewController {
                 locationFormTableViewController.id = uniqueSessionId
                 locationFormTableViewController.latitude = String(selectedPin.coordinate.latitude)
