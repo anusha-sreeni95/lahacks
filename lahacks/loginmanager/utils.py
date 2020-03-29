@@ -26,8 +26,8 @@ def add_session(request, email_address):
     rows = SessionData.objects.filter(email_address=email_address, ip_address=ip_address)
     if len(rows) == 0:
         row = SessionData(email_address=email_address, ip_address=ip_address)
-        request.session['email_address'] = email_address
         row.save()
+    request.session['email_address'] = email_address
 
 
 def remove_session(request):
