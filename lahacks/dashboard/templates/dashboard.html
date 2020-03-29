@@ -66,7 +66,7 @@
 		/* Always set the map height explicitly to define the size of the div
 		 * element that contains the map. */
 		#map {
-		  height: 100%;
+		  height: 95%;
 		}
 		/* Optional: Makes the sample page fill the window. */
 		html, body {
@@ -125,6 +125,7 @@
 		  font-size: 15px;
 		  font-weight: 300;
 		  margin-left: 12px;
+          margin-top: 12px;
 		  padding: 0 11px 0 13px;
 		  text-overflow: ellipsis;
 		  width: 400px;
@@ -133,7 +134,11 @@
 		#pac-input:focus {
 		  border-color: #4d90fe;
 		}
-  
+
+        #toggle-heatmap {
+          margin-left: 12px;
+        }
+
 		#title {
 		  color: #fff;
 		  background-color: #4d90fe;
@@ -149,7 +154,9 @@
 	</head>
 	<body>
 
-	<input id="pac-input" class="controls" type="text" placeholder="Search Box">
+    <input id="pac-input" class="controls" type="text" placeholder="Search Box">
+    <input id="toggle-heatmap" class="controls" type="checkbox" name="toggle-heatmap">
+    <label for="toggle-heatmap">Enable Heatmap</label>
 	<div id="map"></div>
 	
 	<script>
@@ -160,10 +167,11 @@
 		// This example requires the Places library. Include the libraries=places
 		// parameter when you first load the API. For example:
 		// <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places">
-  
+        var map, heatmap, markerCluster;
+        var markers = [], loc_circles = [];
 		function initAutocomplete() {
-		  var map = new google.maps.Map(document.getElementById('map'), {
-			center: {lat: -33.8688, lng: 151.2195},
+		  map = new google.maps.Map(document.getElementById('map'), {
+			center: {lat: 34.0689, lng: 241.5548},
 			zoom: 13,
 			mapTypeId: 'roadmap'
 		  });
@@ -178,7 +186,6 @@
 			searchBox.setBounds(map.getBounds());
 		  });
   
-		  var markers = [];
 		  // Listen for the event fired when the user selects a prediction and retrieve
 		  // more details for that place.
 		  searchBox.addListener('places_changed', function() {
@@ -225,82 +232,124 @@
 			  }
 			});
 			map.fitBounds(bounds);
-		  });
-  
-		// Create an array of alphabetical characters used to label the markers for now.
-		var labels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  
-		var markers = locations.map(function(location, i) {
-			var contentString = '<div id="content">'+
-            '<div id="siteNotice">'+
-            '</div>'+
-            '<h1 id="firstHeading" class="firstHeading">Time Added</h1>'+
-            '<div id="bodyContent">'+
-            '<p>' + location.time + '</p>'+
-            '</div>'+
-			'</div>';
-			
-			var infoWindow = new google.maps.InfoWindow({
-				content: contentString
-			});
+          });
 
-			var marker = new google.maps.Marker({
-				position: {lat: location.lat, lng: location.lng},
-				label: labels[i % labels.length]
-			});
+        loadJSON(function(json) {
+            loadMarkermap(json);
+        });
+    }
 
-			marker.addListener('click', function(){
-				infoWindow.open(map, marker)
-			});
+    var toggle_heatmap = false;
+    document.getElementById("toggle-heatmap").addEventListener("click", toggle);
 
-			return marker;
-		});
-  
-		// Add a marker clusterer to manage the markers.
-		var markerCluster = new MarkerClusterer(map, markers,
-		  {imagePath: '{% static "images/map_icons/m" %}'});
+    function toggle(){
+        toggle_heatmap = !toggle_heatmap;
+        loadJSON(function(json) {
+            if (toggle_heatmap) loadHeatmap(json);
+            else loadMarkermap(json);
+        });
+    }
 
-		var loc_circles = locations.map(function(location) {
-			return new google.maps.Circle({
-				strokeColor: '#FF0000',
-				strokeOpacity: 0.8,
-				strokeWeight: 2,
-				fillColor: '#FF0000',
-				fillOpacity: 0.35,
-				map: map,
-				center: {lat: location.lat, lng: location.lng},
-				radius: 50
-			});
-		});
-	  }
+    // Temp locations need to retreive data from database instead
+    function loadJSON(callback) {
+      var xobj = new XMLHttpRequest();
+      xobj.overrideMimeType("application/json");
+      xobj.open('GET', '{% static "dataset_10.json" %}', true);
+      xobj.onreadystatechange = function () {
+        if (xobj.readyState == 4 && xobj.status == "200") {
+        callback(JSON.parse(xobj.responseText));
+        }
+      };
+      xobj.send(null);  
+    }
 
-	  // Temp locations need to retreive data from database instead
-	  var locations = [
-	  {lat: -31.563910, lng: 147.154312, time: 1585419249451},
-	  {lat: -33.718234, lng: 150.363181, time: 1585419249451},
-	  {lat: -33.727111, lng: 150.371124, time: 1585419249451},
-	  {lat: -33.848588, lng: 151.209834, time: 1585419249451},
-	  {lat: -33.851702, lng: 151.216968, time: 1585419249451},
-	  {lat: -34.671264, lng: 150.863657, time: 1585419249451},
-	  {lat: -35.304724, lng: 148.662905, time: 1585419249451},
-	  {lat: -36.817685, lng: 175.699196, time: 1585419249451},
-	  {lat: -36.828611, lng: 175.790222, time: 1585419249451},
-	  {lat: -37.750000, lng: 145.116667, time: 1585419249451},
-	  {lat: -37.759859, lng: 145.128708, time: 1585419249451},
-	  {lat: -37.765015, lng: 145.133858, time: 1585419249451},
-	  {lat: -37.770104, lng: 145.143299, time: 1585419249451},
-	  {lat: -37.773700, lng: 145.145187, time: 1585419249451},
-	  {lat: -37.774785, lng: 145.137978, time: 1585419249451},
-	  {lat: -37.819616, lng: 144.968119, time: 1585419249451},
-	  {lat: -38.330766, lng: 144.695692, time: 1585419249451},
-	  {lat: -39.927193, lng: 175.053218, time: 1585419249451},
-	  {lat: -41.330162, lng: 174.865694, time: 1585419249451},
-	  {lat: -42.734358, lng: 147.439506, time: 1585419249451},
-	  {lat: -42.734358, lng: 147.501315, time: 1585419249451},
-	  {lat: -42.735258, lng: 147.438000, time: 1585419249451},
-	  {lat: -43.999792, lng: 170.463352, time: 1585419249451}
-	  ]
-	  </script>
+    function loadHeatmap(test_locations) {
+        for (let i = 0; i < markers.length; i++) {
+            var marker = markers[i];
+            marker.setMap(null);
+        }
+        markers.length = 0;
+        for (let i = 0; i < loc_circles.length; i++) {
+            var circle = loc_circles[i];
+            circle.setMap(null);
+        }
+        markerCluster.clearMarkers();
+        var heat_points = [];
+        for (const user in test_locations["data"]) {
+            for (const date in test_locations["data"][user]["timeline"]) {
+                var locations = test_locations["data"][user]["timeline"][date];
+                heat_points = heat_points.concat(Object.keys(locations).map(function(location, i) {
+                    return new google.maps.LatLng(locations[location].lat, locations[location].lng);
+                }));
+            }
+        }
+        heatmap = new google.maps.visualization.HeatmapLayer({
+            data: heat_points,
+            dissipating: false,
+            radius: 0.05,
+            map: map
+        });
+    }
+
+    function loadMarkermap(test_locations) {
+        if(heatmap) heatmap.setMap(null);
+        for (const user in test_locations["data"]) {
+            for (const date in test_locations["data"][user]["timeline"]) {
+                var locations = test_locations["data"][user]["timeline"][date];
+                markers = markers.concat(Object.keys(locations).map(function(location, i) {
+
+                    var dateObj = new Date(locations[location].timestamp);
+
+                    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    var year = dateObj.getFullYear();
+                    var month = months[dateObj.getMonth()];
+
+                    var date = dateObj.getDate();
+                    var hour = dateObj.getHours() < 10 ? '0' + dateObj.getHours() : dateObj.getHours();;
+                    var min = dateObj.getMinutes() < 10 ? '0' + dateObj.getMinutes() : dateObj.getMinutes();
+                    var sec = dateObj.getSeconds() < 10 ? '0' + dateObj.getSeconds() : dateObj.getSeconds();
+
+                    var contentString = '<div id="content">'+
+                    '<div id="siteNotice">'+
+                    '<h1 id="firstHeading" class="firstHeading">Time Visited</h1>'+
+                    '<div id="bodyContent">'+
+                    '<p>' + date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec + '</p>'+
+                    '</div>'+
+                    '</div>';
+
+                    var infoWindow = new google.maps.InfoWindow({
+                        content: contentString
+                    });
+
+                    var marker = new google.maps.Marker({
+                        position: {lat: locations[location].lat, lng: locations[location].lng},
+                        label: "1"
+                    });
+
+                    marker.addListener('click', function(){
+                        infoWindow.open(map, marker)
+                    });
+                    return marker;
+                }));
+
+                loc_circles = loc_circles.concat(Object.keys(locations).map(function(location) {
+                    return new google.maps.Circle({
+                        strokeColor: '#FF0000',
+                        strokeOpacity: 0.8,
+                        strokeWeight: 2,
+                        fillColor: '#FF0000',
+                        fillOpacity: 0.35,
+                        map: map,
+                        center: {lat: locations[location].lat, lng: locations[location].lng},
+                        radius: 50
+                    });
+                }));
+            }
+        }
+        markerCluster = new MarkerClusterer(map, markers,
+                {imagePath: '{% static "images/map_icons/m" %}'});
+    }
+    </script>
 
 	<!-- jQuery -->
 	<script src="{% static 'js/jquery.min.js' %}"></script>
@@ -321,7 +370,7 @@
 	<script src="{% static 'js/main.js' %}"></script>
 
 	<script src="https://unpkg.com/@google/markerclustererplus@4.0.1/dist/markerclustererplus.min.js"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=INSERT_API_KEY_HERE&libraries=places&callback=initAutocomplete"
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAzndUzLJ-j1xhI2AlS920_L9gXYAlrkTU&libraries=places,visualization&callback=initAutocomplete"
     async defer></script>
 
 	</body>
