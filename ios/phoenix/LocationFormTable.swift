@@ -20,7 +20,7 @@ class LocationFormTable: UITableViewController {
     var location: String?
     var longitude: String?
     var latitude: String?
-    var timestamp: String?
+    var timestamp: Int64?
     var notes: String?
     
     override func viewDidLoad() {
@@ -59,7 +59,7 @@ class LocationFormTable: UITableViewController {
     
     @objc func updateDate(_ sender: Any) {
         let picker = self.timestampTextField!.inputView as! UIDatePicker
-        timestamp = String(picker.date.currentTimeMillis())
+        timestamp = picker.date.currentTimeMillis()
         
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
@@ -69,8 +69,12 @@ class LocationFormTable: UITableViewController {
     
     @IBAction func sendData(_ sender: Any) {
         let rootVC = self.navigationController!.viewControllers.first as! PatientHistoryTable
-        rootVC.locationRecords.append(location!)
-        rootVC.timestampRecords.append(self.timestampTextField.text!)
+        var newRecord = historyRecord.init()
+        newRecord.location = location!
+        newRecord.time = self.timestampTextField.text!
+        newRecord.unixTime = timestamp!
+        
+        rootVC.records.append(newRecord)
         self.navigationController!.popToRootViewController(animated: true)
     }
     
