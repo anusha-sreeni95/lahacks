@@ -49,6 +49,7 @@ class LocationFormTable: UITableViewController {
         datePicker.setDate(Date().self, animated: true)
         datePicker.addTarget(self, action: #selector(updateDate(_:)), for: UIControl.Event.valueChanged)
         self.timestampTextField.inputView = datePicker
+        timestamp = datePicker.date.currentTimeMillis()
 
         // Uncomment the following line to preserve selection between presentations
         // self.clearsSelectionOnViewWillAppear = false
@@ -73,6 +74,30 @@ class LocationFormTable: UITableViewController {
         newRecord.location = location!
         newRecord.time = self.timestampTextField.text!
         newRecord.unixTime = timestamp!
+        
+        let json: String = "{\"latitude\": \(latitude ?? ""), \"longitude\": \(longitude ?? ""), \"timestamp\": \(String(timestamp!))}"
+        let url = URL(string: "http://127.0.0.1:8000/dashboard/")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.httpBody = json.data(using: .utf8)
+        
+        let task = URLSession.shared.dataTask(with: request) {(data, response, error) in
+            guard let data = data, error == nil else {                                                 // check for fundamental networking error
+                print("error=\(String(describing: error))")
+                return
+            }
+
+            if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {           // check for http errors
+                print("statusCode should be 200, but is \(httpStatus.statusCode)")
+                print("response = \(String(describing: response))")
+
+            }
+
+            let responseString = String(data: data, encoding: .utf8)
+            print("responseString = \(responseString ?? "")")
+        }
+        
+        task.resume()
         
         rootVC.records.append(newRecord)
         self.navigationController!.popToRootViewController(animated: true)
