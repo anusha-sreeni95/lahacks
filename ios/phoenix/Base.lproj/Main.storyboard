@@ -85,7 +85,7 @@
             </objects>
             <point key="canvasLocation" x="1766.6666666666667" y="136.60714285714286"/>
         </scene>
-        <!--phoenix-->
+        <!--Phoenix-->
         <scene sceneID="5qg-cV-L3N">
             <objects>
                 <tableViewController id="uJA-sd-6yo" customClass="PatientHistoryTable" customModule="phoenix" customModuleProvider="target" sceneMemberID="viewController">
@@ -124,7 +124,9 @@
                             <outlet property="delegate" destination="uJA-sd-6yo" id="oTf-iq-Les"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" title="phoenix" id="z1s-kf-xUR"/>
+                    <navigationItem key="navigationItem" title="Phoenix" id="z1s-kf-xUR">
+                        <barButtonItem key="leftBarButtonItem" image="phoenix" id="DGR-5e-PQ4"/>
+                    </navigationItem>
                     <connections>
                         <segue destination="BYZ-38-t0r" kind="show" identifier="toMap" id="oDc-fA-If4"/>
                     </connections>
@@ -141,6 +143,10 @@
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <imageView key="tableFooterView" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="arrow" id="mtf-F1-aRh">
+                            <rect key="frame" x="0.0" y="515" width="414" height="58"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        </imageView>
                         <sections>
                             <tableViewSection headerTitle="ID" id="sXN-iE-s4Q">
                                 <cells>
@@ -291,4 +297,8 @@
             <point key="canvasLocation" x="137.68115942028987" y="137.94642857142856"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="arrow" width="128" height="128"/>
+        <image name="phoenix" width="12.5" height="12.5"/>
+    </resources>
 </document>
