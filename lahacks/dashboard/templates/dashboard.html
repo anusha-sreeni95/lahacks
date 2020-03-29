@@ -136,7 +136,52 @@
 		}
 
         #toggle-heatmap {
+          float: left;
           margin-left: 12px;
+        }
+
+        #time-counter {
+            float: right;
+            margin-right : 12px;
+        }
+
+        .slidecontainer {
+          width: 100%; /* Width of the outside container */
+        }
+
+        /* The slider itself */
+        .slider {
+          -webkit-appearance: none;  /* Override default CSS styles */
+          appearance: none;
+          width: 100%; /* Full-width */
+          height: 25px; /* Specified height */
+          background: #d3d3d3; /* Grey background */
+          outline: none; /* Remove outline */
+          opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
+          -webkit-transition: .2s; /* 0.2 seconds transition on hover */
+          transition: opacity .2s;
+        }
+
+        /* Mouse-over effects */
+        .slider:hover {
+          opacity: 1; /* Fully shown on mouse-over */
+        }
+
+        /* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */ 
+        .slider::-webkit-slider-thumb {
+          -webkit-appearance: none; /* Override default look */
+          appearance: none;
+          width: 25px; /* Set a specific slider handle width */
+          height: 25px; /* Slider handle height */
+          background: #4CAF50; /* Green background */
+          cursor: pointer; /* Cursor on hover */
+        }
+
+        .slider::-moz-range-thumb {
+          width: 25px; /* Set a specific slider handle width */
+          height: 25px; /* Slider handle height */
+          background: #4CAF50; /* Green background */
+          cursor: pointer; /* Cursor on hover */
         }
 
 		#title {
@@ -156,8 +201,13 @@
 
     <input id="pac-input" class="controls" type="text" placeholder="Search Box">
     <input id="toggle-heatmap" class="controls" type="checkbox" name="toggle-heatmap">
+    <p id="time-counter">Days in the Past: <span id="demo"></span></p>
     <label for="toggle-heatmap">Enable Heatmap</label>
-	<div id="map"></div>
+    <div class="slidecontainer">
+        <input type="range" min="0" max="60" value="00" class="slider" id="myRange">
+    </div>    
+    <div id="map"></div>
+    
 	
 	<script>
 		// This example adds a search box to a map, using the Google Place Autocomplete
@@ -244,26 +294,6 @@
 
     function toggle(){
         toggle_heatmap = !toggle_heatmap;
-        loadJSON(function(json) {
-            if (toggle_heatmap) loadHeatmap(json);
-            else loadMarkermap(json);
-        });
-    }
-
-    // Temp locations need to retreive data from database instead
-    function loadJSON(callback) {
-      var xobj = new XMLHttpRequest();
-      xobj.overrideMimeType("application/json");
-      xobj.open('GET', '{% static "dataset_10.json" %}', true);
-      xobj.onreadystatechange = function () {
-        if (xobj.readyState == 4 && xobj.status == "200") {
-        callback(JSON.parse(xobj.responseText));
-        }
-      };
-      xobj.send(null);  
-    }
-
-    function loadHeatmap(test_locations) {
         for (let i = 0; i < markers.length; i++) {
             var marker = markers[i];
             marker.setMap(null);
@@ -273,14 +303,60 @@
             var circle = loc_circles[i];
             circle.setMap(null);
         }
+        loadJSON(function(json) {
+            if (toggle_heatmap) loadHeatmap(json);
+            else loadMarkermap(json);
+        });
+    }
+    
+    var slider = document.getElementById("myRange");
+    var output = document.getElementById("demo");
+    output.innerHTML = slider.value;
+
+    var currentTime = Math.round((new Date()).getTime() / 1000);
+
+    slider.oninput = function() {
+      output.innerHTML = this.value;
+      currentTime = Math.round((new Date()).getTime() / 1000) - (this.value * 86400); 
+      loadJSON(function(json) {
+            for (let i = 0; i < markers.length; i++) {
+                var marker = markers[i];
+                marker.setMap(null);
+            }
+            markers.length = 0;
+            for (let i = 0; i < loc_circles.length; i++) {
+                var circle = loc_circles[i];
+                circle.setMap(null);
+            }
+            if (toggle_heatmap) loadHeatmap(json);
+            else loadMarkermap(json);
+        });
+    }
+
+    // Temp locations need to retreive data from database instead
+    function loadJSON(callback) {
+      var xobj = new XMLHttpRequest();
+      xobj.overrideMimeType("application/json");
+      xobj.open('GET', '{% static "dataset_800.json" %}', true);
+      xobj.onreadystatechange = function () {
+        if (xobj.readyState == 4 && xobj.status == "200") {
+        callback(JSON.parse(xobj.responseText));
+        }
+      };
+      xobj.send(null);  
+    }
+
+    function loadHeatmap(test_locations) {
         markerCluster.clearMarkers();
         var heat_points = [];
         for (const user in test_locations["data"]) {
             for (const date in test_locations["data"][user]["timeline"]) {
                 var locations = test_locations["data"][user]["timeline"][date];
-                heat_points = heat_points.concat(Object.keys(locations).map(function(location, i) {
-                    return new google.maps.LatLng(locations[location].lat, locations[location].lng);
-                }));
+                for (const location in locations) {
+                    if (locations[location].timestamp < currentTime - 1209600) continue
+                    var point = new google.maps.LatLng(locations[location].lat, locations[location].lng);
+                    heat_points.push(point);
+                }
             }
         }
         heatmap = new google.maps.visualization.HeatmapLayer({
@@ -293,18 +369,27 @@
 
     function loadMarkermap(test_locations) {
         if(heatmap) heatmap.setMap(null);
+        var markerCounter = {}, spawned_circles = {}
         for (const user in test_locations["data"]) {
             for (const date in test_locations["data"][user]["timeline"]) {
                 var locations = test_locations["data"][user]["timeline"][date];
-                markers = markers.concat(Object.keys(locations).map(function(location, i) {
-
-                    var dateObj = new Date(locations[location].timestamp);
+                for (const location in locations) {
+                    if (locations[location].timestamp < currentTime - 1209600) continue
+                    if (!(locations[location].lat.toString() in markerCounter)) {
+                        markerCounter[locations[location].lat.toString()] = {};
+                    }
+                    if (locations[location].lat.toString() in markerCounter &&
+                        locations[location].lng.toString() in markerCounter[locations[location].lat.toString()]) {
+                        markerCounter[locations[location].lat.toString()][locations[location].lng.toString()] *= 10;
+                        continue
+                    }
+                    var dateObj = new Date(locations[location].timestamp * 1000);
 
                     var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                     var year = dateObj.getFullYear();
                     var month = months[dateObj.getMonth()];
 
-                    var date = dateObj.getDate();
+                    var fdate = dateObj.getDate();
                     var hour = dateObj.getHours() < 10 ? '0' + dateObj.getHours() : dateObj.getHours();;
                     var min = dateObj.getMinutes() < 10 ? '0' + dateObj.getMinutes() : dateObj.getMinutes();
                     var sec = dateObj.getSeconds() < 10 ? '0' + dateObj.getSeconds() : dateObj.getSeconds();
@@ -313,7 +398,7 @@
                     '<div id="siteNotice">'+
                     '<h1 id="firstHeading" class="firstHeading">Time Visited</h1>'+
                     '<div id="bodyContent">'+
-                    '<p>' + date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec + '</p>'+
+                    '<p>' + fdate + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec + '</p>'+
                     '</div>'+
                     '</div>';
 
@@ -326,14 +411,26 @@
                         label: "1"
                     });
 
-                    marker.addListener('click', function(){
-                        infoWindow.open(map, marker)
-                    });
-                    return marker;
-                }));
+                    google.maps.event.addListener(marker, 'click', function(content){
+                        return function() {
+                            infoWindow.setContent(content);
+                            infoWindow.open(map, this);
+                        }
+                    }(contentString));
+                    
+                    markers.push(marker);
 
-                loc_circles = loc_circles.concat(Object.keys(locations).map(function(location) {
-                    return new google.maps.Circle({
+                    markerCounter[locations[location].lat.toString()][locations[location].lng.toString()] = 10;
+                }
+                for (const location in locations) {
+                    if (locations[location].timestamp < currentTime - 1209600) continue
+                    if (!(locations[location].lat.toString() in spawned_circles)) 
+                        spawned_circles[locations[location].lat.toString()] = {};
+                    if (locations[location].lat.toString() in spawned_circles &&
+                        locations[location].lng.toString() in spawned_circles[locations[location].lat.toString()]) continue
+
+                    console.log(markerCounter[locations[location].lat.toString()][locations[location].lng.toString()])
+                    var circle = new google.maps.Circle({
                         strokeColor: '#FF0000',
                         strokeOpacity: 0.8,
                         strokeWeight: 2,
@@ -341,9 +438,13 @@
                         fillOpacity: 0.35,
                         map: map,
                         center: {lat: locations[location].lat, lng: locations[location].lng},
-                        radius: 50
+                        radius: markerCounter[locations[location].lat.toString()][locations[location].lng.toString()]
                     });
-                }));
+                    
+                    loc_circles.push(circle);
+
+                    spawned_circles[locations[location].lat.toString()][locations[location].lng.toString()] = true;
+                }
             }
         }
         markerCluster = new MarkerClusterer(map, markers,
